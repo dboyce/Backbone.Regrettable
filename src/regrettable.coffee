@@ -1,5 +1,5 @@
-_ = require "underscore"
-Backbone = require "backbone"
+_ = if require? then require("underscore") else window._
+Backbone = if require? then require("backbone") else window.Backbone
 
 class Action
   constructor: ->
@@ -41,6 +41,7 @@ Backbone.Regrettable = (->
   tracking: (t)->
     tracking = t
   undo: ->
+    return if undoStack.length == 0
     try
       tracking = false
       action = undoStack.pop()
@@ -49,6 +50,7 @@ Backbone.Regrettable = (->
     finally
       tracking = true
   redo: ->
+    return if redoStack.length == 0
     try
       tracking = false
       action = redoStack.pop()
@@ -56,6 +58,9 @@ Backbone.Regrettable = (->
       undoStack.push(action)
     finally
       tracking = true
+  reset: ->
+    undoStack = []
+    redoStack = []
   bind: (o) ->
     if o instanceof Backbone.Model
       o.on "change", (model) ->

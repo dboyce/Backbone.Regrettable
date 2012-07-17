@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="text/javascript" src="js/jquery-1.7.2.min.js"></script>
+    <script type="text/javascript" src="js/underscore-min.js"></script>
+    <script type="text/javascript" src="js/backbone-min.js"></script>
+    <script type="text/javascript" src="js/jquery-keyboard.js"></script>
+    <script type="text/javascript" src="../lib/Backbone.Regrettable.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            var ItemModel = Backbone.Model.extend({
+                initialize: function() {
+                    Backbone.Regrettable.bind(this);
+                }
+            });
+            var ItemList = Backbone.Collection.extend({
+                model: ItemModel,
+                initialize: function() {
+                    Backbone.Regrettable.bind(this);
+                }
+            });
+            var ItemView = Backbone.View.extend({
+                tagName: "li",
+                events: {
+                    "change input[type='checkbox']": function() {
+                        this.model.set('done', this.checkbox.attr('checked') === 'checked');
+                        this.toggleDone();
+                    },
+                    "change input[type='text']": function() {
+                        this.model.set('value', this.input.val());
+                    }
+                },
+                render: function() {
+                    $(this.el).attr('id', this.model.cid);
+                    this.checkbox = $("<input type='checkbox' />").appendTo($(this.el));
+                    this.input = $("<input type='text' placeholder='what needs to be done?'/>").appendTo($(this.el));
+                    this.input.val(this.model.get('value'));
+                    this.toggleDone();
+
+                    // bind both ways
+
+                    this.model.on('change', _.bind(function() {
+                        this.input.val(this.model.get('value'));
+                        if(this.model.get('done')) {
+                            this.checkbox.attr('checked','checked');
+                        }
+                        else {
+                            this.checkbox.removeAttr('checked');
+                        }
+                    }, this));
+
+                    return this.el;
+                },
+
+                toggleDone: function() {
+                    if(this.model.get('done')) {
+                        $(this.input).css('text-decoration', 'strike-through');
+                    }
+                    else {
+                        $(this.input).css('text-decoration', '');
+                    }
+                }
+            });
+            var ItemListView = Backbone.View.extend({
+                el: $("#list"),
+                initialize: function() {
+                    this.collection.on('add', _.bind(function(item) {
+                        $(this.el).append(new ItemView({model:item}).render());
+                    }, this));
+                    this.collection.on('remove', _.bind(function(item){
+                        $(this.el).find("li#" + item.cid).remove();
+                    }, this));
+                },
+                render: function() {
+                    return this.el;
+                }
+            });
+
+            var listView = new ItemListView({collection:new ItemList()});
+            var input = $('#add-one-input');
+
+
+            var addOne = function() {
+                listView.collection.add({'value':input.val()});
+                $("#list:last-child input").focus();
+            };
+
+            $(document).keyboard(function() {
+                this.bind(this.ctl, this.z).down(function(){
+                    Backbone.Regrettable.undo();
+                });
+                this.bind(this.ctl, this.y).down(function(){
+                    Backbone.Regrettable.redo();
+                });
+            });
+
+            $('ul#list input').keyboard(function(){
+                this.bind(this.enter).down(function(){
+                    addOne();
+                });
+            });
+
+            addOne();
+
+            Backbone.Regrettable.reset()
+        });
+    </script>
+</head>
+<body>
+<div>
+    <h1>Todos</h1>
+    <div style="width:30em;float:left;">
+        <ul id="list" style="list-style: none">
+        </ul>
+        <div>
+            <ul style="border:1px solid grey; list-style: none">
+            <li>shift+enter to add a new item (or just enter if an item is selected)</li>
+            <li>ctl+z to undo</li>
+            <li>ctl+y to redo</li>
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+</html>

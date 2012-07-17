@@ -2,7 +2,7 @@ require "should"
 require "../src/regrettable"
 Backbone = require "backbone"
 
-{undo,redo, undoStack} = Backbone.Regrettable
+{undo,redo,undoStack} = Backbone.Regrettable
 
 describe "Backbone.Regrettable", ->
 
