@@ -18,6 +18,8 @@ The API is attached to Backbone.Regrettable and looks like this:
 * reset() - clear all tracking data (for example, call after a model has been loaded)
 * undo() - undo the last action
 * redo() - revert the last call to undo
+* hasUndo() - checks if there is something to undo
+* hasRedo() - checks if there is something to redo
 
 ## Usage
 
