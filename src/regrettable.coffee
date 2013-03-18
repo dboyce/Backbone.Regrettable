@@ -58,6 +58,10 @@ Backbone.Regrettable = (->
       undoStack.push(action)
     finally
       tracking = true
+  hasUndo: ->
+    return undoStack.length > 0
+  hasRedo: ->
+    return redoStack.length > 0
   reset: ->
     undoStack = []
     redoStack = []
